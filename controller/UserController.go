@@ -19,9 +19,11 @@ func Register(ctx *gin.Context) {
 	DB := common.GetDB()
 
 	//获取参数
-	name := ctx.PostForm("name")
-	telephone := ctx.PostForm("telephone")
-	password := ctx.PostForm("password")
+	var requesrUser = model.User{}
+	ctx.Bind(&requesrUser)
+	name := requesrUser.Name
+	telephone := requesrUser.Telephone
+	password := requesrUser.Password
 	//数据验证
 	if len(telephone) != 11 {
 		response.Response(ctx, http.StatusUnprocessableEntity, 422, nil, "手机号必须为11位")
@@ -54,8 +56,16 @@ func Register(ctx *gin.Context) {
 	}
 	DB.Create(&newUser)
 
+	//发放token
+	token, err := common.ReleaseToken(newUser)
+	if err != nil {
+		response.Response(ctx, http.StatusInternalServerError, 500, nil, "系统异常")
+		log.Printf("token generate error :%v", err)
+		return
+	}
+
 	//返回结果
-	response.Success(ctx, nil, "注册成功")
+	response.Success(ctx, gin.H{"token": token}, "注册成功")
 }
 
 // 登录

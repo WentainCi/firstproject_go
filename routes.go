@@ -7,6 +7,7 @@ import (
 )
 
 func CollectRoute(route *gin.Engine) *gin.Engine {
+	route.Use(middleware.CORSMiddleware())
 	route.POST("/api/auth/register", controller.Register)
 	route.POST("/api/auth/login", controller.Login)
 	route.GET("/api/auth/info", middleware.AuthMiddleware(), controller.Info)
